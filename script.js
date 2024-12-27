@@ -14,7 +14,7 @@ const paddle = {
   width: 100,
   height: 10,
   x: 0,
-  y: 0,
+  const canvas = document.getElementById("gameCanvas");
   rotation: 0, // 回転角度 (ラジアン)
 };
 
