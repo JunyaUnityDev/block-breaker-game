@@ -15,6 +15,7 @@ const paddle = {
   height: 10,
   x: 0,
   y: 0,
+  rotation: 0, // 回転角度 (ラジアン)
 };
 
 // ボール設定
@@ -85,10 +86,14 @@ function resizeCanvas() {
   }
 }
 
-// パドルを描画
+// パドルを描画（回転を適用）
 function drawPaddle() {
+  ctx.save(); // 現在の状態を保存
+  ctx.translate(paddle.x + paddle.width / 2, paddle.y + paddle.height / 2); // 中心点に移動
+  ctx.rotate(paddle.rotation); // 回転を適用
   ctx.fillStyle = "#0095dd";
-  ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
+  ctx.fillRect(-paddle.width / 2, -paddle.height / 2, paddle.width, paddle.height); // 中心から描画
+  ctx.restore(); // 保存した状態を復元
 }
 
 // ボールを描画
@@ -170,9 +175,15 @@ function draw() {
 
 // 更新
 function update() {
-  moveBall();
-  draw();
-  if (!isGameOver) requestAnimationFrame(update);
+  moveBall();          // ボールの移動
+  updatePaddleRotation(); // パドルの回転を更新
+  draw();              // 描画（画面の描画）
+  if (!isGameOver) requestAnimationFrame(update); // 次のフレームをリクエスト
+}
+
+// パドルの回転を更新
+function updatePaddleRotation() {
+  paddle.rotation += 0.01; // 回転速度を設定（小さいほどゆっくり）
 }
 
 // マウスとタッチの移動イベント
