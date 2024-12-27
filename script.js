@@ -1,11 +1,11 @@
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
-// 縦横比を固定（例: スマホ向けの9:16）
+// 縦横比を固定（スマホ向けの9:16）
 const ASPECT_RATIO = 9 / 16;
 
 // ゲーム内の基本設定
-const BASE_WIDTH = 360; // 基準幅（ゲームの設計基準）
+const BASE_WIDTH = 360; // 基準幅
 const BASE_HEIGHT = 640; // 基準高さ
 let scale = 1; // リサイズ時のスケール
 
@@ -49,10 +49,9 @@ let isGameOver = false;
 
 // キャンバスサイズをリサイズ
 function resizeCanvas() {
-  const windowWidth = window.innerWidth;
-  const windowHeight = window.innerHeight;
+  const windowWidth = window.innerWidth * 0.75; // 画面幅の3/4
+  const windowHeight = window.innerHeight * 0.75; // 画面高さの3/4
 
-  // 縦横比を保ちながらサイズを設定
   if (windowWidth / windowHeight < ASPECT_RATIO) {
     canvas.width = windowWidth;
     canvas.height = windowWidth / ASPECT_RATIO;
@@ -61,7 +60,6 @@ function resizeCanvas() {
     canvas.width = windowHeight * ASPECT_RATIO;
   }
 
-  // スケールを計算
   scale = canvas.width / BASE_WIDTH;
 
   // パドルの位置を再設定
@@ -177,17 +175,24 @@ function update() {
   if (!isGameOver) requestAnimationFrame(update);
 }
 
-// イベントリスナー
-canvas.addEventListener("mousemove", (e) => {
+// マウスとタッチの移動イベント
+canvas.addEventListener("mousemove", handlePaddleMove);
+canvas.addEventListener("touchmove", handlePaddleMove);
+
+function handlePaddleMove(e) {
+  e.preventDefault(); // スクロールを無効化
+
   const canvasRect = canvas.getBoundingClientRect();
-  const mouseX = e.clientX - canvasRect.left;
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const mouseX = clientX - canvasRect.left;
+
   paddle.x = mouseX - paddle.width / 2;
 
   // パドルが画面外に出ないよう制御
   if (paddle.x < 0) paddle.x = 0;
   if (paddle.x + paddle.width > canvas.width)
     paddle.x = canvas.width - paddle.width;
-});
+}
 
 // 初期化
 resizeCanvas();
