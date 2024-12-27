@@ -1,0 +1,23 @@
+/* 全体のスタイル */
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: #222;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+/* 見出しのスタイル */
+h1 {
+  margin: 20px;
+}
+
+/* ゲームキャンバスのスタイル */
+#gameCanvas {
+  border: 1px solid #fff;
+  background-color: #000;
+}
