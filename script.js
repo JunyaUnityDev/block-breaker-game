@@ -131,14 +131,25 @@ function moveBall() {
     ball.dy *= -1;
   }
 
-  // パドルとの衝突
-  if (
-    ball.x > paddle.x &&
-    ball.x < paddle.x + paddle.width &&
-    ball.y + ball.radius > paddle.y
-  ) {
-    ball.dy *= -1;
-  }
+// パドルとの衝突
+if (
+  ball.x > paddle.x &&
+  ball.x < paddle.x + paddle.width &&
+  ball.y + ball.radius > paddle.y
+) {
+  const paddleCenter = paddle.x + paddle.width / 2; // パドルの中心
+  const impactPoint = ball.x - paddleCenter; // 衝突位置の相対座標
+  const maxBounceAngle = Math.PI / 3; // 最大反射角（60度）
+
+  // 衝突位置を基に反射角を計算
+  const bounceAngle = (impactPoint / (paddle.width / 2)) * maxBounceAngle;
+
+  // 速度を更新
+  const speed = Math.sqrt(ball.dx ** 2 + ball.dy ** 2); // 現在の速度を一定に保つ
+  ball.dx = speed * Math.sin(bounceAngle); // 新しいX方向速度
+  ball.dy = -speed * Math.cos(bounceAngle); // 新しいY方向速度
+}
+
 
   // ブロックとの衝突
   for (let row = 0; row < brickRowCount; row++) {
