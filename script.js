@@ -132,25 +132,55 @@ function moveBall() {
   }
 
 // パドルとの衝突
-if (
-  ball.x > paddle.x &&
-  ball.x < paddle.x + paddle.width &&
-  ball.y + ball.radius > paddle.y &&
-  ball.y - ball.radius < paddle.y + paddle.height // パドルの厚みも考慮
-) {
-  const paddleCenter = paddle.x + paddle.width / 2; // パドルの中央
-  const impactPoint = ball.x - paddleCenter; // 衝突位置（パドル中央からの相対位置）
-  const maxBounceAngle = Math.PI / 3; // 最大反射角（60度）
+if (checkPaddleCollision(ball)) {
+  const paddleCenterX = paddle.x + paddle.width / 2;
+  const paddleCenterY = paddle.y + paddle.height / 2;
 
-  // 衝突位置を基に反射角を計算
-  const bounceAngle = (impactPoint / (paddle.width / 2)) * maxBounceAngle;
+  // ボールの座標をパドルのローカル座標系に変換
+  const relativeBallX = Math.cos(-paddle.rotation) * (ball.x - paddleCenterX) - Math.sin(-paddle.rotation) * (ball.y - paddleCenterY);
+  const relativeBallY = Math.sin(-paddle.rotation) * (ball.x - paddleCenterX) + Math.cos(-paddle.rotation) * (ball.y - paddleCenterY);
 
-  // ボールの速度を計算
-  const speed = Math.sqrt(ball.dx ** 2 + ball.dy ** 2); // 現在の速度を一定に保つ
-  ball.dx = speed * Math.sin(bounceAngle); // 新しいX方向速度
-  ball.dy = -speed * Math.cos(bounceAngle); // 新しいY方向速度
+  // パドルのローカル座標で衝突判定
+  if (
+    relativeBallX > -paddle.width / 2 &&
+    relativeBallX < paddle.width / 2 &&
+    relativeBallY > -paddle.height / 2 &&
+    relativeBallY < paddle.height / 2
+  ) {
+    // パドルの衝突位置に基づいて反射角を計算
+    const impactPoint = relativeBallX; // パドル中央を基準としたX座標
+    const maxBounceAngle = Math.PI / 3; // 最大反射角（60度）
+    const bounceAngle = (impactPoint / (paddle.width / 2)) * maxBounceAngle;
+
+    // ボールの速度を計算
+    const speed = Math.sqrt(ball.dx ** 2 + ball.dy ** 2); // 現在の速度を一定に保つ
+    ball.dx = speed * Math.sin(bounceAngle); // 新しいX方向速度
+    ball.dy = -speed * Math.cos(bounceAngle); // 新しいY方向速度
+
+    // ボールの回転座標系を元に戻す
+    const tempDx = Math.cos(paddle.rotation) * ball.dx - Math.sin(paddle.rotation) * ball.dy;
+    const tempDy = Math.sin(paddle.rotation) * ball.dx + Math.cos(paddle.rotation) * ball.dy;
+    ball.dx = tempDx;
+    ball.dy = tempDy;
+  }
 }
 
+// 衝突判定を別関数に分離
+function checkPaddleCollision(ball) {
+  const paddleCenterX = paddle.x + paddle.width / 2;
+  const paddleCenterY = paddle.y + paddle.height / 2;
+
+  // ボールとパドルの中心間の距離
+  const distX = Math.abs(ball.x - paddleCenterX);
+  const distY = Math.abs(ball.y - paddleCenterY);
+
+  // 距離がパドルの半径より大きい場合は衝突しない
+  if (distX > paddle.width / 2 + ball.radius || distY > paddle.height / 2 + ball.radius) {
+    return false;
+  }
+
+  return true;
+}
 
 
   // ブロックとの衝突
