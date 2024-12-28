@@ -1,4 +1,3 @@
-/* 全体のスタイル */
 body {
   margin: 0;
   font-family: Arial, sans-serif;
@@ -13,12 +12,6 @@ body {
   touch-action: none; /* タッチ操作のスクロールを防止 */
 }
 
-/* 見出しのスタイル */
-h1 {
-  margin: 20px;
-}
-
-/* ゲームキャンバスのスタイル */
 #gameCanvas {
   border: 1px solid #fff;
   background-color: #000;
