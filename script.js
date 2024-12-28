@@ -14,7 +14,7 @@ const paddle = {
   width: 100,
   height: 10,
   x: 0,
-  const canvas = document.getElementById("gameCanvas");
+  y: BASE_HEIGHT - 40, // Y座標も正しく指定
   rotation: 0, // 回転角度 (ラジアン)
 };
 
@@ -67,7 +67,7 @@ function resizeCanvas() {
   paddle.width = 100 * scale;
   paddle.height = 10 * scale;
   paddle.x = (BASE_WIDTH / 2 - 50) * scale;
-  paddle.y = (BASE_HEIGHT - 20) * scale;
+  paddle.y = (BASE_HEIGHT - 40) * scale;
 
   // ボールの位置を再設定
   ball.x = (BASE_WIDTH / 2) * scale;
@@ -86,14 +86,10 @@ function resizeCanvas() {
   }
 }
 
-// パドルを描画（回転を適用）
+// パドルを描画
 function drawPaddle() {
-  ctx.save(); // 現在の状態を保存
-  ctx.translate(paddle.x + paddle.width / 2, paddle.y + paddle.height / 2); // 中心点に移動
-  ctx.rotate(paddle.rotation); // 回転を適用
   ctx.fillStyle = "#0095dd";
-  ctx.fillRect(-paddle.width / 2, -paddle.height / 2, paddle.width, paddle.height); // 中心から描画
-  ctx.restore(); // 保存した状態を復元
+  ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
 }
 
 // ボールを描画
@@ -131,57 +127,10 @@ function moveBall() {
     ball.dy *= -1;
   }
 
-// パドルとの衝突
-if (checkPaddleCollision(ball)) {
-  const paddleCenterX = paddle.x + paddle.width / 2;
-  const paddleCenterY = paddle.y + paddle.height / 2;
-
-  // ボールの座標をパドルのローカル座標系に変換
-  const relativeBallX = Math.cos(-paddle.rotation) * (ball.x - paddleCenterX) - Math.sin(-paddle.rotation) * (ball.y - paddleCenterY);
-  const relativeBallY = Math.sin(-paddle.rotation) * (ball.x - paddleCenterX) + Math.cos(-paddle.rotation) * (ball.y - paddleCenterY);
-
-  // パドルのローカル座標で衝突判定
-  if (
-    relativeBallX > -paddle.width / 2 &&
-    relativeBallX < paddle.width / 2 &&
-    relativeBallY > -paddle.height / 2 &&
-    relativeBallY < paddle.height / 2
-  ) {
-    // パドルの衝突位置に基づいて反射角を計算
-    const impactPoint = relativeBallX; // パドル中央を基準としたX座標
-    const maxBounceAngle = Math.PI / 3; // 最大反射角（60度）
-    const bounceAngle = (impactPoint / (paddle.width / 2)) * maxBounceAngle;
-
-    // ボールの速度を計算
-    const speed = Math.sqrt(ball.dx ** 2 + ball.dy ** 2); // 現在の速度を一定に保つ
-    ball.dx = speed * Math.sin(bounceAngle); // 新しいX方向速度
-    ball.dy = -speed * Math.cos(bounceAngle); // 新しいY方向速度
-
-    // ボールの回転座標系を元に戻す
-    const tempDx = Math.cos(paddle.rotation) * ball.dx - Math.sin(paddle.rotation) * ball.dy;
-    const tempDy = Math.sin(paddle.rotation) * ball.dx + Math.cos(paddle.rotation) * ball.dy;
-    ball.dx = tempDx;
-    ball.dy = tempDy;
+  // パドルとの衝突
+  if (ball.x > paddle.x && ball.x < paddle.x + paddle.width && ball.y + ball.radius > paddle.y) {
+    ball.dy *= -1;
   }
-}
-
-// 衝突判定を別関数に分離
-function checkPaddleCollision(ball) {
-  const paddleCenterX = paddle.x + paddle.width / 2;
-  const paddleCenterY = paddle.y + paddle.height / 2;
-
-  // ボールとパドルの中心間の距離
-  const distX = Math.abs(ball.x - paddleCenterX);
-  const distY = Math.abs(ball.y - paddleCenterY);
-
-  // 距離がパドルの半径より大きい場合は衝突しない
-  if (distX > paddle.width / 2 + ball.radius || distY > paddle.height / 2 + ball.radius) {
-    return false;
-  }
-
-  return true;
-}
-
 
   // ブロックとの衝突
   for (let row = 0; row < brickRowCount; row++) {
@@ -218,15 +167,9 @@ function draw() {
 
 // 更新
 function update() {
-  moveBall();          // ボールの移動
-  updatePaddleRotation(); // パドルの回転を更新
-  draw();              // 描画（画面の描画）
-  if (!isGameOver) requestAnimationFrame(update); // 次のフレームをリクエスト
-}
-
-// パドルの回転を更新
-function updatePaddleRotation() {
-  paddle.rotation += 0.01; // 回転速度を設定（小さいほどゆっくり）
+  moveBall();
+  draw();
+  if (!isGameOver) requestAnimationFrame(update);
 }
 
 // マウスとタッチの移動イベント
@@ -234,7 +177,7 @@ canvas.addEventListener("mousemove", handlePaddleMove);
 canvas.addEventListener("touchmove", handlePaddleMove);
 
 function handlePaddleMove(e) {
-  e.preventDefault(); // スクロールを無効化
+  e.preventDefault();
 
   const canvasRect = canvas.getBoundingClientRect();
   const clientX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -244,8 +187,7 @@ function handlePaddleMove(e) {
 
   // パドルが画面外に出ないよう制御
   if (paddle.x < 0) paddle.x = 0;
-  if (paddle.x + paddle.width > canvas.width)
-    paddle.x = canvas.width - paddle.width;
+  if (paddle.x + paddle.width > canvas.width) paddle.x = canvas.width - paddle.width;
 }
 
 // 初期化
